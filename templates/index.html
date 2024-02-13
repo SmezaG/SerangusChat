@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>ChatApp</title>
+
+    <style>
+        body {
+            padding-bottom: 70px; /* Ajusta según la altura de la caja de texto */
+        }
+    
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: calc(100vh - 120px); /* Ajusta según la altura de la caja de texto y el título */
+            overflow-y: auto;
+        }
+    
+        #messageInputContainer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 10px;
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+        }
+    
+        #messageInput {
+            width: calc(100% - 20px);
+            margin-right: 10px;
+        }
+    </style>
+    
+
+</head>
+<body>
+    <h1 class="mb-4">Chat App</h1>
+    <div id="messages" class="mb-4"></div>
+    
+    <div id="messageInputContainer" class="input-group">
+        <input type="text" id="messageInput" class="form-control" placeholder="Escribe tu mensaje..." />
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="button" onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+     <!-- Bootstrap Scripts -->
+     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+ 
+     <!-- Socket.IO Script -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+ 
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        ssocket.on('message', function(data) {
+        var messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML += '<p><strong>' + data.username + ':</strong> ' + data.message + '</p>';
+        });
+
+
+        function sendMessage() {
+            var messageInput = document.getElementById('messageInput');
+            var message = messageInput.value;
+            socket.emit('message', message);
+            messageInput.value = '';
+        }
+    </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    var username;
+
+    // Solicitar nombre de usuario al conectarse
+    socket.on('request_username', function() {
+        username = prompt('Por favor, ingresa tu nombre de usuario:');
+        socket.emit('username_response', {'username': username});
+    });
+
+    // Manejar la conexión de un nuevo usuario
+    socket.on('user_connected', function(data) {
+        var messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML += '<p><strong>' + data.username + ' se ha unido al chat.</strong></p>';
+    });
+
+    // Manejar el envío de mensajes
+    function sendMessage() {
+        var messageInput = document.getElementById('messageInput');
+        var message = messageInput.value;
+        socket.emit('message', {'message': message});
+        messageInput.value = '';
+    }
+
+        // Detectar el presionar "Enter" en el campo de mensaje
+        var messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Mostrar mensajes en la interfaz
+    socket.on('message', function(data) {
+        var messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML += '<p><strong>' + data.username + ':</strong> ' + data.message + '</p>';
+    });
+
+</script>
+
+</body>
+</html>
