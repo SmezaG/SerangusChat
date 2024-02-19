@@ -77,9 +77,15 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
 <script>
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    // Primero, verificamos si el navegador soporta notificaciones
+    if ("Notification" in window) {
+        // Solicitar permiso al usuario
+        Notification.requestPermission().then(function(result) {
+            console.log("El permiso de notificación es", result);
+        });
+    }
 
-    var username;
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
 
     // Solicitar nombre de usuario al conectarse
     socket.on('request_username', function() {
@@ -87,35 +93,35 @@
         socket.emit('username_response', {'username': username});
     });
 
-    // Manejar la conexión de un nuevo usuario
-    socket.on('user_connected', function(data) {
+    // Mostrar notificación para nuevos mensajes
+    socket.on('message', function(data) {
         var messagesDiv = document.getElementById('messages');
-        messagesDiv.innerHTML += '<p><strong>' + data.username + ' se ha unido al chat.</strong></p>';
+        messagesDiv.innerHTML += '<p><strong>' + data.username + ':</strong> ' + data.message + '</p>';
+        // Verificar si el permiso fue concedido
+        if (Notification.permission === "granted") {
+            new Notification(data.username + " dice:", {
+                body: data.message,
+                icon: 'path_to_some_icon_if_desired.png' // Opcional: Puedes añadir un ícono
+            });
+        }
     });
 
-    // Manejar el envío de mensajes
     function sendMessage() {
         var messageInput = document.getElementById('messageInput');
         var message = messageInput.value;
-        socket.emit('message', {'message': message});
+        socket.emit('message', {'message': message, 'username': username}); // Asegúrate de enviar el nombre de usuario junto con el mensaje
         messageInput.value = '';
     }
 
-        // Detectar el presionar "Enter" en el campo de mensaje
-        var messageInput = document.getElementById('messageInput');
-        messageInput.addEventListener('keypress', function(event) {
+    // Detectar el presionar "Enter" en el campo de mensaje
+    var messageInput = document.getElementById('messageInput');
+    messageInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
             sendMessage();
         }
     });
-
-    // Mostrar mensajes en la interfaz
-    socket.on('message', function(data) {
-        var messagesDiv = document.getElementById('messages');
-        messagesDiv.innerHTML += '<p><strong>' + data.username + ':</strong> ' + data.message + '</p>';
-    });
-
 </script>
+
 
 </body>
 </html>
